@@ -88,7 +88,8 @@ validation_generator = validation_datagen.flow(X_train, y_train, batch_size=32)
 from keras.optimizers import Adam
 from keras.applications import ResNet50
 
-model = Sequential()
+#model = Sequential()
+model = ResNet50(include_top=False)   #transfer learning
 
 model.add(Conv2D(32, (3, 3), activation='relu', input_shape=(32, 32, 3)))
 model.add(Conv2D(32, (3, 3)))
@@ -106,7 +107,6 @@ model.add(Activation('relu'))
 model.add(Dropout(0.5))
 model.add(Dense(10, activation='softmax'))
 adam = Adam(lr=0.0006, beta_1=0.9, beta_2=0.999, decay=0.0)
-model = ResNet50(include_top=False)   #transfer learning
 model.add(Dense(10, 'softmax'))
 model.summary()
 model.compile(loss='categorical_crossentropy', metrics=['accuracy'], optimizer=adam)
