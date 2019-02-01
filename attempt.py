@@ -31,22 +31,11 @@ images_train = X_train
 lables_train = y_train
 images_test = X_test
 labels_test = y_test
-classes = ['0', '1', '2', '3', '4','5', '6', '7','8', '9']
-data_sets = {
-    'images_train': X_train,
-    'labels_train': y_train,
-    'images_test': X_test,
-    'labels_test': y_test,
-    'classes': classes
-  }
-print("Shape of training data:")
+
 X_train = X_train.reshape((len(X_train), 3, 32, 32)).transpose(0, 2, 3, 1)
-print(X_train.shape)
-print(y_train.shape)
-print("Shape of test data:")
+
 X_test = X_test.reshape((len(X_test), 3, 32, 32)).transpose(0, 2, 3, 1)
-print(X_test.shape)
-print(y_test.shape)
+
 test = test.reshape((len(test), 3, 32, 32)).transpose(0, 2, 3, 1)
 input_shape = (32, 32, 3)
 
@@ -62,10 +51,6 @@ X_train /= 255
 X_test /= 255
 test /= 255
 
-print('x_train shape:', X_train.shape)
-print('Number of images in x_train', X_train.shape[0])
-print('Number of images in x_test', X_test.shape[0])
-
 from keras.models import Sequential
 from keras.layers import Dense, Activation
 from keras.optimizers import SGD
@@ -74,22 +59,26 @@ from keras.layers import Conv2D, MaxPooling2D
 from keras.layers.normalization import BatchNormalization
 from keras.preprocessing.image import ImageDataGenerator
 
-train_datagen = ImageDataGenerator(
-        width_shift_range=0.1,  # randomly shift images horizontally (fraction of total width)
-        height_shift_range=0.1,  # randomly shift images vertically (fraction of total height)
-        horizontal_flip=True)   # flip images horizontally
+datagen = ImageDataGenerator( rotation_range=90,
+                 width_shift_range=0.1, height_shift_range=0.1,
+                 horizontal_flip=True)
+datagen.fit(X_train)
 
-validation_datagen = ImageDataGenerator()
+# train_datagen = ImageDataGenerator(
+#         width_shift_range=0.1,  # randomly shift images horizontally (fraction of total width)
+#         height_shift_range=0.1,  # randomly shift images vertically (fraction of total height)
+#         horizontal_flip=True)   # flip images horizontally
 
-train_generator = train_datagen.flow(X_train, y_train, batch_size=32)
-validation_generator = validation_datagen.flow(X_train, y_train, batch_size=32)
+# validation_datagen = ImageDataGenerator()
+
+# train_generator = train_datagen.flow(X_train, y_train, batch_size=32)
+# validation_generator = validation_datagen.flow(X_train, y_train, batch_size=32)
 
 
 from keras.optimizers import Adam
 from keras.applications import ResNet50
 
-#model = Sequential()
-model = ResNet50(include_top=False)   #transfer learning
+model = Sequential()
 
 model.add(Conv2D(32, (3, 3), activation='relu', input_shape=(32, 32, 3)))
 model.add(Conv2D(32, (3, 3)))
@@ -98,7 +87,6 @@ model.add(BatchNormalization())
 model.add(Activation('relu'))
 model.add(MaxPooling2D(pool_size=(2, 2)))
 model.add(Dropout(0.25))
-
 model.add(Flatten())
 model.add(Dense(256))
 # Batch normalization layer added here
@@ -107,16 +95,15 @@ model.add(Activation('relu'))
 model.add(Dropout(0.5))
 model.add(Dense(10, activation='softmax'))
 adam = Adam(lr=0.0006, beta_1=0.9, beta_2=0.999, decay=0.0)
-model.add(Dense(10, 'softmax'))
-model.summary()
+
 model.compile(loss='categorical_crossentropy', metrics=['accuracy'], optimizer=adam)
 
-history = model.fit_generator(train_generator,    
-                    validation_data=validation_generator,
-                    validation_steps=len(X_train) / 32,
-                    steps_per_epoch=len(X_train) / 32,
-                    epochs=150,
-                    verbose=2)
+# history = model.fit_generator(train_generator,    
+#                     validation_data=validation_generator,
+#                     validation_steps=len(X_train) / 32,
+#                     steps_per_epoch=len(X_train) / 32,
+#                     epochs=150,
+#                     verbose=2)
 
 #plotLosses(history)
 mc = keras.callbacks.ModelCheckpoint('newmodel{epoch}.h5', save_weights_only=False, period=50)
